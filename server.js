@@ -1,45 +1,80 @@
 const express = require('express');
+const logger = require("morgan");
 const mongoose = require('mongoose');
 const config = require('./config');
-const workoutModel = require('./models/workoutModel');
+const excerciseModel = require('./models/exerciseModel');
+const PORT = process.env.PORT || 3000;
+
+const Exercise = require("./exerciseModel.js");
 
 const app = express();
 
 const db = config.get('mongoURI');
 
-mongoose
-  .connect(db, { useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false })
-  .then(() => console.log('MongoDB Connected...'))
-  .catch(err => console.log(err));
+app.use(logger("dev"));
 
-  /*sample
-  const newAnimal = new Animal({
-    name: 'Red Panda',
-    isEndangered: true
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.use(express.static("public"));
+
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/custommethoddb", { useNewUrlParser: true });
+
+// mongoose
+//   .connect(db, { useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false })
+//   .then(() => console.log('MongoDB Connected...'))
+//   .catch(err => console.log(err));
+
+  db.Exercise.create({ name: "Exercises" })
+  .then(dbExercise=> {
+    console.log(dbExercise);
   })
-  newAnimal
-    .save()
-    .then(item => console.log(item))
-    .catch(err => console.log(err));
+  .catch(({ message }) => {
+    console.log(message);
+  });
 
-    data from schema check accuracy
-    const newWorkout = Workout({
+app.get("/notes", (req, res) => {
+  db.Note.find({})
+    .then(dbNote => {
+      res.json(dbNote);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
 
-        day: new Date().setDate(new Date().getDate()-10),
-        exercises: [
-          {
-            type: "resistance",
-            name: "Bicep Curl",
-            duration: 20,
-            weight: 100,
-            reps: 10,
-            sets: 4
-          }
-        ]
-      })
+app.get("/user", (req, res) => {
+  db.User.find({})
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
 
-    newWorkout
-    .save()
-    .then(item => console.log(item))
-    .catch(err => console.log(err));
-    */
+app.post("/submit", ({ body }, res) => {
+  db.Note.create(body)
+    .then(({ _id }) => db.User.findOneAndUpdate({}, { $push: { notes: _id } }, { new: true }))
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+app.get("/populateduser", (req, res) => {
+  db.User.find({})
+    .populate("notes")
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+
+app.listen(PORT, () => {
+  console.log(`App running on port ${PORT}!`);
+});
