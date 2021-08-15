@@ -1,11 +1,10 @@
 const express = require('express');
 const logger = require("morgan");
 const mongoose = require('mongoose');
-const config = require('./config');
-const excerciseModel = require('./models/exerciseModel');
+
 const PORT = process.env.PORT || 3000;
 
-const Exercise = require("./exerciseModel.js");
+const Exercises = require("./exerciseModel.js");
 
 const app = express();
 
@@ -69,6 +68,16 @@ app.post("/workout", ({ body }, res) => {
 app.put("/id", (req, res) => {
   db.Exer.find({})
     .push("exercises")
+    .then(dbUser => {
+      res.json(dbUser);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
+app.delete("/id", (req, res) => {
+  db.Exer.find({})
+    .destroy("exercises")
     .then(dbUser => {
       res.json(dbUser);
     })
