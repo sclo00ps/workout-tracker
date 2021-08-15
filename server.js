@@ -4,11 +4,12 @@ const mongoose = require('mongoose');
 
 const PORT = process.env.PORT || 3000;
 
-const Exercises = require("./exerciseModel.js");
+const Exercises = require("./models/exerciseModel.js");
 
 const app = express();
 
-const db = config.get('mongoURI');
+//const db = config.get('mongoURI');
+const db = require("./models/exerciseModel.js");
 
 app.use(logger("dev"));
 
@@ -24,9 +25,9 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/custommethoddb"
 //   .then(() => console.log('MongoDB Connected...'))
 //   .catch(err => console.log(err));
 
-  db.Exercise.create({ name: "Exercises" })
-  .then(dbExercise=> {
-    console.log(dbExercise);
+  Exercises.create({exercises})
+  .then(dbExercises=> {
+    console.log(dbExercises);
   })
   .catch(({ message }) => {
     console.log(message);
@@ -35,8 +36,8 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/custommethoddb"
 app.get("/duration", (req, res) => {
   db.Exercises.find({})
     .aggregate(duration)
-    .then(dbExercise=> {
-      res.json(dbExercise);
+    .then(dbExercises=> {
+      res.json(dbExercises);
     })
     .catch(err => {
       res.json(err);
@@ -46,8 +47,8 @@ app.get("/duration", (req, res) => {
 app.get("/limit", (req, res) => {
   db.Exercises.find({})
     .limit (10)
-    .then(dbExercise => {
-      res.json(dbExercise);
+    .then(dbExercises => {
+      res.json(dbExercises);
     })
     .catch(err => {
       res.json(err);
@@ -57,8 +58,8 @@ app.get("/limit", (req, res) => {
 app.post("/workout", ({ body }, res) => {
   db.Exercises.create(body)
     .then(({ _id }) => db.User.findOneAndUpdate({}, { $push: { exercises: _id } }, { new: true }))
-    .then(dbExercise => {
-      res.json(dbExercise);
+    .then(dbExercises => {
+      res.json(dbExercises);
     })
     .catch(err => {
       res.json(err);
@@ -68,8 +69,8 @@ app.post("/workout", ({ body }, res) => {
 app.put("/id", (req, res) => {
   db.Exer.find({})
     .push("exercises")
-    .then(dbUser => {
-      res.json(dbUser);
+    .then(dbExercises => {
+      res.json(dbExercises);
     })
     .catch(err => {
       res.json(err);
@@ -78,8 +79,8 @@ app.put("/id", (req, res) => {
 app.delete("/id", (req, res) => {
   db.Exer.find({})
     .destroy("exercises")
-    .then(dbUser => {
-      res.json(dbUser);
+    .then(dbExercises => {
+      res.json(dbExercises);
     })
     .catch(err => {
       res.json(err);
