@@ -33,40 +33,42 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/custommethoddb"
     console.log(message);
   });
 
-app.get("/notes", (req, res) => {
-  db.Note.find({})
-    .then(dbNote => {
-      res.json(dbNote);
+app.get("/duration", (req, res) => {
+  db.Exercises.find({})
+    .aggregate(duration)
+    .then(dbExercise=> {
+      res.json(dbExercise);
     })
     .catch(err => {
       res.json(err);
     });
 });
 
-app.get("/user", (req, res) => {
-  db.User.find({})
-    .then(dbUser => {
-      res.json(dbUser);
+app.get("/limit", (req, res) => {
+  db.Exercises.find({})
+    .limit (10)
+    .then(dbExercise => {
+      res.json(dbExercise);
     })
     .catch(err => {
       res.json(err);
     });
 });
 
-app.post("/submit", ({ body }, res) => {
-  db.Note.create(body)
-    .then(({ _id }) => db.User.findOneAndUpdate({}, { $push: { notes: _id } }, { new: true }))
-    .then(dbUser => {
-      res.json(dbUser);
+app.post("/workout", ({ body }, res) => {
+  db.Exercises.create(body)
+    .then(({ _id }) => db.User.findOneAndUpdate({}, { $push: { exercises: _id } }, { new: true }))
+    .then(dbExercise => {
+      res.json(dbExercise);
     })
     .catch(err => {
       res.json(err);
     });
 });
 
-app.get("/populateduser", (req, res) => {
-  db.User.find({})
-    .populate("notes")
+app.put("/id", (req, res) => {
+  db.Exer.find({})
+    .push("exercises")
     .then(dbUser => {
       res.json(dbUser);
     })
